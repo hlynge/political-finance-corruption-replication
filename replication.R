@@ -604,7 +604,7 @@ stargazer(r_ov1, r_ov2, r_ov3, type = "html", out = "tableA3.html",
           omit.stat = c("f", "ser"))
 
 # -----------------------------------------------------------------------------
-# 11. COMPREHENSIVE SPECIFICATION ANALYSIS (Table A4)
+# 11. COMPREHENSIVE SPECIFICATION ANALYSIS (Table 3)
 # -----------------------------------------------------------------------------
 # 729 specifications varying: DV (3) × oversight (3) × time (3) ×
 # regime (3) × lag (3) × sample (3)
@@ -717,7 +717,7 @@ cat("Predicted negative sign:",
     sum(results_df$interaction_negative, na.rm = TRUE), "\n")
 
 # -----------------------------------------------------------------------------
-# 12. EVENT STUDY (Table A5, Figure A1)
+# 12. EVENT STUDY (Table 4, Figure 2)
 # -----------------------------------------------------------------------------
 # Tests for pre-trends (reverse causality) using leads and lags ±3 years
 
@@ -778,7 +778,7 @@ event_coefs$ci_upper   <- event_coefs$coef + 1.96 * event_coefs$se
 event_coefs$significant <- event_coefs$ci_lower * event_coefs$ci_upper > 0
 print(event_coefs)
 
-# Figure A1
+# Figure 2
 ggplot(event_coefs, aes(x = period, y = coef)) +
   geom_point(size = 3, color = "black") +
   geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.2, color = "black") +
@@ -795,10 +795,10 @@ ggplot(event_coefs, aes(x = period, y = coef)) +
   scale_x_continuous(breaks = -3:3,
                      labels = c("t-3", "t-2", "t-1", "t=0", "t+1", "t+2", "t+3"))
 
-ggsave("figureA1_event_study.pdf", width = 7, height = 5)
+ggsave("figure2_event_study.pdf", width = 7, height = 5)
 
-# Table A5
-stargazer(event_results, type = "html", out = "tableA5.html",
+# Table 4
+stargazer(event_results, type = "html", out = "table4.html",
           title = "Event Study: Dynamic Effects of Public Funding × EMB Capacity",
           style = "apsr",
           dep.var.labels = "", model.names = FALSE,
