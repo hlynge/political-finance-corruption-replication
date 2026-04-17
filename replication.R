@@ -343,13 +343,26 @@ embcap_10    <- quantile(df_sub$v2elembcap_l1, 0.1, na.rm = TRUE)
 embcap_50    <- quantile(df_sub$v2elembcap_l1, 0.5, na.rm = TRUE)
 embcap_90    <- quantile(df_sub$v2elembcap_l1, 0.9, na.rm = TRUE)
 
+# CI strategy: compute the predicted value using all coefficients (so the
+# lines land at the right levels), but compute the SE using only the three
+# focal coefficients (public funding, EMB capacity, and their interaction).
+# This treats controls as fixed at their medians and isolates the uncertainty
+# that actually differs across the three lines. Without this, CIs are inflated
+# by control-coefficient variance that is shared across lines and cancels
+# when comparing them, producing visually overlapping bands even when the
+# interaction is highly significant.
+focal_names <- c("v2elpubfin_l1", "v2elembcap_l1",
+                 "v2elpubfin_l1:v2elembcap_l1")
+vcov_focal  <- vcov_m2[focal_names, focal_names]
+
 make_pred <- function(pubfin_range, embcap_val, label) {
-  xhyp <- cbind(pubfin_range, embcap_val,
-                matrix(median_controls, nrow = length(pubfin_range),
-                       ncol = length(median_controls), byrow = TRUE),
-                pubfin_range * embcap_val)
-  pred <- as.vector(xhyp %*% coeffs)
-  se   <- sqrt(diag(xhyp %*% vcov_m2 %*% t(xhyp)))
+  xhyp_full <- cbind(pubfin_range, embcap_val,
+                     matrix(median_controls, nrow = length(pubfin_range),
+                            ncol = length(median_controls), byrow = TRUE),
+                     pubfin_range * embcap_val)
+  pred <- as.vector(xhyp_full %*% coeffs)
+  xhyp_focal <- cbind(pubfin_range, embcap_val, pubfin_range * embcap_val)
+  se <- sqrt(diag(xhyp_focal %*% vcov_focal %*% t(xhyp_focal)))
   data.frame(
     pubfin       = pubfin_range,
     predicted    = pred,
@@ -401,10 +414,7 @@ ggplot(df_plot, aes(x = pubfin, y = predicted,
     "High (90th pct)"   = "solid",
     "Medium (50th pct)" = "dashed",
     "Low (10th pct)"    = "dotted"
-  )) +
-  # Zoom the y-axis so the three lines are visually distinguishable.
-  # The 95% CI ribbons extend beyond this range and are clipped.
-  coord_cartesian(ylim = c(-1.0, -0.55))
+  ))
 
 ggsave("figure1_marginal_effects.pdf", width = 7, height = 5)
 
