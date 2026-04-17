@@ -401,7 +401,10 @@ ggplot(df_plot, aes(x = pubfin, y = predicted,
     "High (90th pct)"   = "solid",
     "Medium (50th pct)" = "dashed",
     "Low (10th pct)"    = "dotted"
-  ))
+  )) +
+  # Zoom the y-axis so the three lines are visually distinguishable.
+  # The 95% CI ribbons extend beyond this range and are clipped.
+  coord_cartesian(ylim = c(-1.0, -0.55))
 
 ggsave("figure1_marginal_effects.pdf", width = 7, height = 5)
 
