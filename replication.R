@@ -343,14 +343,36 @@ embcap_10    <- quantile(df_sub$v2elembcap_l1, 0.1, na.rm = TRUE)
 embcap_50    <- quantile(df_sub$v2elembcap_l1, 0.5, na.rm = TRUE)
 embcap_90    <- quantile(df_sub$v2elembcap_l1, 0.9, na.rm = TRUE)
 
-# CI strategy: compute the predicted value using all coefficients (so the
-# lines land at the right levels), but compute the SE using only the three
-# focal coefficients (public funding, EMB capacity, and their interaction).
-# This treats controls as fixed at their medians and isolates the uncertainty
-# that actually differs across the three lines. Without this, CIs are inflated
-# by control-coefficient variance that is shared across lines and cancels
-# when comparing them, producing visually overlapping bands even when the
-# interaction is highly significant.
+# -----------------------------------------------------------------------------
+# Note on CI computation for Figure 1
+# -----------------------------------------------------------------------------
+# The "textbook" way to compute a CI for a predicted value is
+#   Var(y_hat) = x' V x,
+# where x is the full design vector (including controls) and V is the full
+# coefficient vcov. This is what we do for the line levels (`pred` below).
+#
+# However, plotting those full-prediction CIs here is actively misleading to
+# most readers. The CIs include variance from every coefficient in the model
+# (including the many control coefficients). That variance is *shared* across
+# the three lines and cancels when comparing them, so individual-line CIs can
+# overlap substantially even though the interaction (and hence the difference
+# in slopes) is highly significant. Readers who don't know the "non-
+# overlapping CIs => significant difference, but overlapping CIs => nothing"
+# asymmetry will look at the plot and wrongly conclude the conditional effect
+# is not significant.
+#
+# To show the three lines with CI bands whose visual separation *tracks* the
+# significance of the interaction, we instead compute the CI using only the
+# three focal coefficients (public funding, EMB capacity, interaction) with
+# controls held fixed at their medians. This isolates the uncertainty that
+# actually differs across lines. The lines themselves are unchanged.
+#
+# This is non-standard and the statistically more principled display is a
+# conditional marginal effect plot (dy/dx of public funding as a function of
+# EMB capacity, with CIs computed from the three focal coefficients). We
+# chose the current display for readability given our audience; readers who
+# want the marginal-effect view can obtain it from the interaction coefficient
+# in Table 1 plus its vcov.
 focal_names <- c("v2elpubfin_l1", "v2elembcap_l1",
                  "v2elpubfin_l1:v2elembcap_l1")
 vcov_focal  <- vcov_m2[focal_names, focal_names]
